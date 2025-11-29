@@ -3,7 +3,8 @@ package util;
 import models.Tweet;
 import java.util.HashMap;
 
-//This class is used to store likes and retweets
+//This class is used to store likes or retweets
+//chronologically in terms of when a tweet is liked
 //for ../models/User.java
 public class OrderedTweetSet{
     private class Node{
