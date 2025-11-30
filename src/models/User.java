@@ -1,7 +1,6 @@
 package models;
 
 import java.util.HashSet;
-import java.util.ArrayList;
 
 import util.OrderedTweetSet;
 

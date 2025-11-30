@@ -2,7 +2,9 @@ package models;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.Queue;
+import java.util.PriorityQueue;
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class Twitter {
     private HashMap<String, User> usersByUsername;
@@ -189,7 +191,7 @@ public class Twitter {
     //--------------------------------------------
 
     public User search(String query){
-        if(query == null || query.empty()) return;
+        if(query == null || query.isEmpty()) return null;
 
         String lowercaseQuery = query.toLowerCase();
 
@@ -197,14 +199,45 @@ public class Twitter {
     }
 
     public Tweet[] getFeed(User user){
+        int feedSize = 10;
+
         PriorityQueue<Tweet> pq = new PriorityQueue<>(
             (a, b) -> b.getDate().compareTo(a.getDate())
         );
 
         for(User followedUser : user.getFollowing()){
-            for(Tweet twt : followedUser.getTweets){
-                pq.push
+            for(Tweet twt : followedUser.getTweets()){
+                pq.add(twt);
             }
         }
+
+        ArrayList<Tweet> feed = new ArrayList<>();
+        for(int i = 0; i < feedSize; i++){
+            if(pq.isEmpty()) break;
+            feed.add(pq.poll());
+        }
+        return feed.toArray(new Tweet[0]);
+    }
+
+    public User[] getSuggestedFriends(User user){
+        // go to level 2 of social graph, return 10 of the users in level 2
+        // who have the most mutuals with user
+
+        ArrayList<User> friends = new ArrayList<>();
+        for(User followedUser : user.getFollowing()){
+            if(user.getFollowers().contains(followedUser)){
+                friends.add(followedUser);
+            }
+        }
+
+        ArrayList<User> friendsOfFriends = new ArrayList<>();
+        for(User friend : friends){
+            for(User followedUser : friend.getFollowing()){
+                if(friend.getFollowers().contains(followedUser)){
+                    friendsOfFriends.add(followedUser);
+                }
+            }
+        }
+        return friendsOfFriends.toArray(new User[0]);
     }
 }
