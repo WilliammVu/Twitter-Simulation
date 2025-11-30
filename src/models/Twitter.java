@@ -188,5 +188,23 @@ public class Twitter {
     // MORE FEATURES
     //--------------------------------------------
 
-    public 
+    public User search(String query){
+        if(query == null || query.empty()) return;
+
+        String lowercaseQuery = query.toLowerCase();
+
+        return usersByUsername.get(lowercaseQuery);
+    }
+
+    public Tweet[] getFeed(User user){
+        PriorityQueue<Tweet> pq = new PriorityQueue<>(
+            (a, b) -> b.getDate().compareTo(a.getDate())
+        );
+
+        for(User followedUser : user.getFollowing()){
+            for(Tweet twt : followedUser.getTweets){
+                pq.push
+            }
+        }
+    }
 }

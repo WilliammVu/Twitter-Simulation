@@ -11,7 +11,7 @@ public class User{
     private String password;
     private HashSet<User> followers;
     private HashSet<User> following;
-    private ArrayList<Tweet> tweets;
+    private OrderedTweetSet tweets;
     private OrderedTweetSet likes;
     private OrderedTweetSet retweets;
     
@@ -19,7 +19,7 @@ public class User{
         this.id = id; this.username = username; this.password = password;
         this.followers = new HashSet<>();
         this.following = new HashSet<>();
-        this.tweets = new ArrayList<>();
+        this.tweets = new OrderedTweetSet();
         this.likes = new OrderedTweetSet();
         this.retweets = new OrderedTweetSet();
     }
@@ -43,7 +43,7 @@ public class User{
     public String getPassword(){return this.password;}
     public HashSet<User> getFollowers(){return new HashSet<>(followers);}
     public HashSet<User> getFollowing(){return new HashSet<>(following);}
-    public ArrayList<Tweet> getTweets(){return new ArrayList<>(tweets);}
+    public Tweet[] getTweets(){return this.tweets.getTweets();}
     public Tweet[] getLikes(){return this.likes.getTweets();}
     public Tweet[] getRetweets(){return this.retweets.getTweets();}
 
@@ -75,7 +75,7 @@ public class User{
         if(new_tweet.getUser() != this){
             throw new IllegalArgumentException("Tweet must belong to this user");
         }
-        this.tweets.add(new_tweet);
+        this.tweets.addTweet(new_tweet);
     }
 
     public void like(Tweet tweet){
