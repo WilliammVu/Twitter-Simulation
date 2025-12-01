@@ -2,9 +2,11 @@ package models;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.Set;
 import java.util.ArrayList;
-import java.util.Collections;
 
 public class Twitter {
     private HashMap<String, User> usersByUsername;
@@ -33,7 +35,7 @@ public class Twitter {
             un.append(Character.toLowerCase(c));
         } username = un.toString();
         User user = usersByUsername.get(username);
-        if(user == null || user.getPassword().equals(password)){
+        if(user == null || !user.getPassword().equals(password)){
             return false;
         }
         currentUser = user;
@@ -96,6 +98,12 @@ public class Twitter {
     }
 
     public boolean createUser(String username, String password){
+        StringBuilder u = new StringBuilder();
+        for(char c : username.toCharArray()){
+            u.append(Character.toLowerCase(c));
+        }
+        username = u.toString();
+
         if(usersByUsername.containsKey(username)) return false;
         if(!validPassword(password) || !validUsername(username)) return false; 
 
@@ -220,24 +228,51 @@ public class Twitter {
     }
 
     public User[] getSuggestedFriends(User user){
-        // go to level 2 of social graph, return 10 of the users in level 2
-        // who have the most mutuals with user
-
-        ArrayList<User> friends = new ArrayList<>();
+        // Get user's friends (mutual following)
+        Set<User> friends = new HashSet<>();
         for(User followedUser : user.getFollowing()){
             if(user.getFollowers().contains(followedUser)){
                 friends.add(followedUser);
             }
         }
 
-        ArrayList<User> friendsOfFriends = new ArrayList<>();
+        // Get friends of friends (level 2)
+        Set<User> friendsOfFriends = new HashSet<>();
         for(User friend : friends){
             for(User followedUser : friend.getFollowing()){
                 if(friend.getFollowers().contains(followedUser)){
-                    friendsOfFriends.add(followedUser);
+                    // Don't suggest the user themselves or existing friends
+                    if(!followedUser.equals(user) && !friends.contains(followedUser)){
+                        friendsOfFriends.add(followedUser);
+                    }
                 }
             }
         }
-        return friendsOfFriends.toArray(new User[0]);
+
+        // Count mutual friends for each level-2 user
+        Map<User, Integer> mutualCount = new HashMap<>();
+        for(User fof : friendsOfFriends){
+            int count = 0;
+            for(User friend : friends){
+                // Check if fof and friend are mutual friends
+                if(fof.getFollowing().contains(friend) && fof.getFollowers().contains(friend)){
+                    count++;
+                }
+            }
+            mutualCount.put(fof, count);
+        }
+
+        // Sort by mutual count (descending) and get top 10
+        PriorityQueue<User> pq = new PriorityQueue<>(
+            (a, b) -> mutualCount.get(b) - mutualCount.get(a)
+        );
+        pq.addAll(friendsOfFriends);
+
+        ArrayList<User> suggestions = new ArrayList<>();
+        for(int i = 0; i < 10 && !pq.isEmpty(); i++){
+            suggestions.add(pq.poll());
+        }
+
+        return suggestions.toArray(new User[0]);
     }
 }
