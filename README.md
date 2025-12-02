@@ -18,7 +18,8 @@ A complete Twitter/X clone built with Spring Boot backend and vanilla JavaScript
 - Real-time character counter for tweets (280 max)
 - User search functionality
 - Suggested friends sidebar
-- Profile pages with follower/following stats
+- Profile pages with follower/following stats and lists
+- Modal view for browsing followers/following with search
 - Timestamp display ("2m ago", "3h ago", etc.)
 - User avatars with initials
 - Mobile-responsive design
@@ -127,7 +128,9 @@ The application will automatically open on the login/signup page.
 
 #### Profile Page
 - View user's tweets, follower count, and following count
-- Follow/unfollow users
+- Click on follower/following counts to view lists in a modal
+- Search through followers/following lists
+- Follow/unfollow users directly from the modal
 - View your own profile
 
 #### Navigation
@@ -156,6 +159,8 @@ The application will automatically open on the login/signup page.
 - `GET /api/users/search?query={username}` - Search for user
 - `GET /api/users/{username}` - Get user profile
 - `GET /api/users/{username}/tweets` - Get user's tweets
+- `GET /api/users/{username}/followers` - Get user's followers list
+- `GET /api/users/{username}/following` - Get user's following list
 - `POST /api/users/{username}/follow` - Follow user
 - `DELETE /api/users/{username}/follow` - Unfollow user
 - `GET /api/users/suggested` - Get suggested friends

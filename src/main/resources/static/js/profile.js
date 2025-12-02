@@ -30,6 +30,19 @@ const searchForm = document.getElementById('searchForm');
 const searchInput = document.getElementById('searchInput');
 const searchResults = document.getElementById('searchResults');
 
+// Modal elements
+const followingBtn = document.getElementById('followingBtn');
+const followersBtn = document.getElementById('followersBtn');
+const usersModal = document.getElementById('usersModal');
+const closeModal = document.getElementById('closeModal');
+const modalTitle = document.getElementById('modalTitle');
+const modalSearchInput = document.getElementById('modalSearchInput');
+const modalUsersList = document.getElementById('modalUsersList');
+
+// Modal state
+let currentModalUsers = [];
+let currentModalType = '';
+
 // Get username from URL
 const urlParams = new URLSearchParams(window.location.search);
 const username = urlParams.get('username');
@@ -101,16 +114,27 @@ function displayProfile(user) {
 
     // Show follow/unfollow button if not own profile
     if (user.username !== currentUser.username) {
+        // Update button visibility and state based on follow status
         if (user.isFollowing) {
             followBtn.style.display = 'none';
+            followBtn.disabled = false;
             unfollowBtn.style.display = 'block';
+            unfollowBtn.disabled = false;
         } else {
             followBtn.style.display = 'block';
+            followBtn.disabled = false;
             unfollowBtn.style.display = 'none';
+            unfollowBtn.disabled = false;
         }
 
-        // Show composer button only on own profile
-        composeTweetBtn.style.display = 'none';
+        // Hide composer button on other's profile
+        if (composeTweetBtn) {
+            composeTweetBtn.style.display = 'none';
+        }
+    } else {
+        // Hide both follow buttons on own profile
+        followBtn.style.display = 'none';
+        unfollowBtn.style.display = 'none';
     }
 }
 
@@ -146,8 +170,17 @@ function createTweetElement(tweet) {
     const timeAgo = getTimeAgo(new Date(tweet.date));
     const avatar = tweet.user.username.charAt(0).toUpperCase();
 
+    // Check if this is a retweet
+    const retweetHeader = tweet.retweetedBy ? `
+        <div class="retweet-header">
+            <svg viewBox="0 0 24 24"><path d="M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.93 1.364 1.46-4.432 4.14-4.432-4.14 1.364-1.46 2.068 1.93V8c0-1.1-.896-2-2-2z"></path></svg>
+            <span><a href="profile.html?username=${tweet.retweetedBy.username}">${tweet.retweetedBy.username}</a> retweeted</span>
+        </div>
+    ` : '';
+
     return `
         <div class="tweet" data-tweet-id="${tweet.id}">
+            ${retweetHeader}
             <div class="tweet-header">
                 <div class="tweet-avatar">${avatar}</div>
                 <div class="tweet-content">
@@ -226,6 +259,9 @@ function attachTweetListeners() {
 // Follow button
 followBtn.addEventListener('click', async () => {
     try {
+        // Disable button to prevent double clicks
+        followBtn.disabled = true;
+
         const response = await fetch(`${API_BASE}/users/${username}/follow`, {
             method: 'POST',
         });
@@ -233,18 +269,24 @@ followBtn.addEventListener('click', async () => {
         const data = await response.json();
 
         if (data.success) {
-            followBtn.style.display = 'none';
-            unfollowBtn.style.display = 'block';
-            loadProfile();
+            // Reload profile to get updated data
+            await loadProfile();
+        } else {
+            console.error('Failed to follow user:', data.message);
+            followBtn.disabled = false;
         }
     } catch (error) {
         console.error('Error following user:', error);
+        followBtn.disabled = false;
     }
 });
 
 // Unfollow button
 unfollowBtn.addEventListener('click', async () => {
     try {
+        // Disable button to prevent double clicks
+        unfollowBtn.disabled = true;
+
         const response = await fetch(`${API_BASE}/users/${username}/follow`, {
             method: 'DELETE',
         });
@@ -252,12 +294,15 @@ unfollowBtn.addEventListener('click', async () => {
         const data = await response.json();
 
         if (data.success) {
-            unfollowBtn.style.display = 'none';
-            followBtn.style.display = 'block';
-            loadProfile();
+            // Reload profile to get updated data
+            await loadProfile();
+        } else {
+            console.error('Failed to unfollow user:', data.message);
+            unfollowBtn.disabled = false;
         }
     } catch (error) {
         console.error('Error unfollowing user:', error);
+        unfollowBtn.disabled = false;
     }
 });
 
@@ -397,6 +442,152 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// Modal functionality
+followingBtn.addEventListener('click', async () => {
+    currentModalType = 'following';
+    modalTitle.textContent = 'Following';
+    modalSearchInput.value = '';
+    usersModal.style.display = 'flex';
+    await loadModalUsers('following');
+});
+
+followersBtn.addEventListener('click', async () => {
+    currentModalType = 'followers';
+    modalTitle.textContent = 'Followers';
+    modalSearchInput.value = '';
+    usersModal.style.display = 'flex';
+    await loadModalUsers('followers');
+});
+
+closeModal.addEventListener('click', () => {
+    usersModal.style.display = 'none';
+    currentModalUsers = [];
+    currentModalType = '';
+});
+
+// Close modal when clicking outside
+usersModal.addEventListener('click', (e) => {
+    if (e.target === usersModal) {
+        usersModal.style.display = 'none';
+        currentModalUsers = [];
+        currentModalType = '';
+    }
+});
+
+// Modal search
+modalSearchInput.addEventListener('input', () => {
+    const query = modalSearchInput.value.toLowerCase().trim();
+
+    if (query === '') {
+        displayModalUsers(currentModalUsers);
+    } else {
+        const filtered = currentModalUsers.filter(user =>
+            user.username.toLowerCase().includes(query)
+        );
+        displayModalUsers(filtered);
+    }
+});
+
+// Load modal users
+async function loadModalUsers(type) {
+    modalUsersList.innerHTML = '<div class="loading">Loading...</div>';
+
+    try {
+        const response = await fetch(`${API_BASE}/users/${username}/${type}`);
+        const data = await response.json();
+
+        if (data.success) {
+            currentModalUsers = data.data;
+            displayModalUsers(currentModalUsers);
+        } else {
+            modalUsersList.innerHTML = '<div class="empty-state" style="padding: 32px;"><p>No users found</p></div>';
+        }
+    } catch (error) {
+        modalUsersList.innerHTML = '<div class="empty-state" style="padding: 32px;"><p>Error loading users</p></div>';
+    }
+}
+
+// Display modal users
+function displayModalUsers(users) {
+    if (users.length === 0) {
+        modalUsersList.innerHTML = '<div class="empty-state" style="padding: 32px;"><p>No users found</p></div>';
+        return;
+    }
+
+    modalUsersList.innerHTML = users.map(user => {
+        const avatar = user.username.charAt(0).toUpperCase();
+        const isOwnProfile = user.username === currentUser.username;
+
+        let actionButton = '';
+        if (!isOwnProfile) {
+            if (user.isFollowing) {
+                actionButton = `<button class="btn-secondary modal-unfollow-btn" data-username="${user.username}">Unfollow</button>`;
+            } else {
+                actionButton = `<button class="btn-primary modal-follow-btn" data-username="${user.username}">Follow</button>`;
+            }
+        }
+
+        return `
+            <div class="modal-user-card">
+                <a href="profile.html?username=${user.username}" class="modal-user-avatar">${avatar}</a>
+                <div class="modal-user-info">
+                    <a href="profile.html?username=${user.username}" class="modal-user-name">${user.username}</a>
+                    <div class="modal-user-username">@${user.username}</div>
+                </div>
+                ${actionButton}
+            </div>
+        `;
+    }).join('');
+
+    // Attach event listeners for follow/unfollow buttons
+    attachModalFollowListeners();
+}
+
+// Attach follow/unfollow listeners in modal
+function attachModalFollowListeners() {
+    document.querySelectorAll('.modal-follow-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const username = btn.dataset.username;
+            try {
+                const response = await fetch(`${API_BASE}/users/${username}/follow`, {
+                    method: 'POST',
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Reload modal users and profile stats
+                    await loadModalUsers(currentModalType);
+                    loadProfile();
+                }
+            } catch (error) {
+                console.error('Error following user:', error);
+            }
+        });
+    });
+
+    document.querySelectorAll('.modal-unfollow-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const username = btn.dataset.username;
+            try {
+                const response = await fetch(`${API_BASE}/users/${username}/follow`, {
+                    method: 'DELETE',
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Reload modal users and profile stats
+                    await loadModalUsers(currentModalType);
+                    loadProfile();
+                }
+            } catch (error) {
+                console.error('Error unfollowing user:', error);
+            }
+        });
+    });
 }
 
 // Initialize

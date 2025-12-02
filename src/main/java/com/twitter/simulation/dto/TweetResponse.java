@@ -10,6 +10,7 @@ public class TweetResponse {
     private int likeCount;
     private boolean isLiked;
     private boolean isRetweeted;
+    private UserResponse retweetedBy;
 
     public TweetResponse() {}
 
@@ -77,5 +78,13 @@ public class TweetResponse {
 
     public void setRetweeted(boolean retweeted) {
         isRetweeted = retweeted;
+    }
+
+    public UserResponse getRetweetedBy() {
+        return retweetedBy;
+    }
+
+    public void setRetweetedBy(UserResponse retweetedBy) {
+        this.retweetedBy = retweetedBy;
     }
 }

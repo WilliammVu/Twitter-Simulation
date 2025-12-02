@@ -7,6 +7,7 @@ import com.twitter.simulation.models.Twitter;
 import com.twitter.simulation.models.User;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -149,5 +150,37 @@ public class TwitterService {
         return Arrays.stream(tweets)
                 .map(tweet -> convertToTweetResponse(tweet, currentUser))
                 .collect(Collectors.toList());
+    }
+
+    public List<TweetResponse> getUserTweetsWithRetweets(User user, User currentUser) {
+        List<TweetResponse> allTweets = new ArrayList<>();
+
+        // Add original tweets
+        Tweet[] originalTweets = user.getTweets();
+        for (Tweet tweet : originalTweets) {
+            TweetResponse response = convertToTweetResponse(tweet, currentUser);
+            allTweets.add(response);
+        }
+
+        // Add retweets with indicator
+        Tweet[] retweets = user.getRetweets();
+        for (Tweet tweet : retweets) {
+            TweetResponse response = convertToTweetResponse(tweet, currentUser);
+            // Set who retweeted this tweet (the profile user)
+            UserResponse retweeterInfo = new UserResponse(
+                user.getID(),
+                user.getUsername(),
+                user.getFollowers().size(),
+                user.getFollowing().size(),
+                user.getTweets().length
+            );
+            response.setRetweetedBy(retweeterInfo);
+            allTweets.add(response);
+        }
+
+        // Sort by date (most recent first)
+        allTweets.sort((a, b) -> b.getDate().compareTo(a.getDate()));
+
+        return allTweets;
     }
 }

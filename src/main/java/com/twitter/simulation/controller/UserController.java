@@ -87,10 +87,10 @@ public class UserController {
                         .body(ApiResponse.error("User not found"));
             }
 
-            Tweet[] tweets = user.getTweets();
-            List<TweetResponse> tweetResponses = twitterService.convertToTweetResponseList(tweets, currentUser);
+            // Combine original tweets and retweets
+            List<TweetResponse> allTweets = twitterService.getUserTweetsWithRetweets(user, currentUser);
 
-            return ResponseEntity.ok(ApiResponse.success(tweetResponses));
+            return ResponseEntity.ok(ApiResponse.success(allTweets));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("An error occurred while fetching tweets"));
@@ -173,6 +173,64 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("An error occurred while fetching suggestions"));
+        }
+    }
+
+    @GetMapping("/{username}/followers")
+    public ResponseEntity<ApiResponse<List<UserResponse>>> getFollowers(@PathVariable String username) {
+        try {
+            User currentUser = twitterService.getCurrentUser();
+
+            if (currentUser == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(ApiResponse.error("You must be logged in to view followers"));
+            }
+
+            User user = twitterService.getUserByUsername(username.toLowerCase());
+
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.error("User not found"));
+            }
+
+            List<UserResponse> followers = twitterService.convertToUserResponseList(
+                user.getFollowers().toArray(new User[0]),
+                currentUser
+            );
+
+            return ResponseEntity.ok(ApiResponse.success(followers));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("An error occurred while fetching followers"));
+        }
+    }
+
+    @GetMapping("/{username}/following")
+    public ResponseEntity<ApiResponse<List<UserResponse>>> getFollowing(@PathVariable String username) {
+        try {
+            User currentUser = twitterService.getCurrentUser();
+
+            if (currentUser == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(ApiResponse.error("You must be logged in to view following"));
+            }
+
+            User user = twitterService.getUserByUsername(username.toLowerCase());
+
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.error("User not found"));
+            }
+
+            List<UserResponse> following = twitterService.convertToUserResponseList(
+                user.getFollowing().toArray(new User[0]),
+                currentUser
+            );
+
+            return ResponseEntity.ok(ApiResponse.success(following));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("An error occurred while fetching following"));
         }
     }
 }

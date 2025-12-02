@@ -61,11 +61,11 @@
                     <h2 id="profileName" class="profile-name">Loading...</h2>
                     <p id="profileHandle" class="profile-handle">@loading</p>
                     <div class="profile-stats">
-                        <div class="stat">
+                        <div class="stat stat-clickable" id="followingBtn">
                             <strong id="followingCount">0</strong>
                             <span>Following</span>
                         </div>
-                        <div class="stat">
+                        <div class="stat stat-clickable" id="followersBtn">
                             <strong id="followersCount">0</strong>
                             <span>Followers</span>
                         </div>
@@ -116,6 +116,26 @@
                 <div id="searchResults" class="search-results"></div>
             </div>
         </aside>
+    </div>
+
+    <!-- Followers/Following Modal -->
+    <div id="usersModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Followers</h2>
+                <button class="close-btn" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-search">
+                <input
+                    type="text"
+                    id="modalSearchInput"
+                    placeholder="Search users..."
+                >
+            </div>
+            <div id="modalUsersList" class="modal-users-list">
+                <div class="loading">Loading...</div>
+            </div>
+        </div>
     </div>
 
     <script src="js/profile.js"></script>
