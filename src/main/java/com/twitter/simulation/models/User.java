@@ -1,8 +1,8 @@
-package models;
+package com.twitter.simulation.models;
 
 import java.util.HashSet;
 
-import util.OrderedTweetSet;
+import com.twitter.simulation.util.OrderedTweetSet;
 
 public class User{
     private final int id;

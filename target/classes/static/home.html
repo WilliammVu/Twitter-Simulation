@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home / Twitter</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-content">
+                <svg class="logo" viewBox="0 0 24 24" aria-hidden="true">
+                    <g><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></g>
+                </svg>
+                <nav class="nav-menu">
+                    <a href="home.html" class="nav-item active">
+                        <svg viewBox="0 0 24 24"><path d="M12 9c-2.209 0-4 1.791-4 4s1.791 4 4 4 4-1.791 4-4-1.791-4-4-4zm0 6c-1.105 0-2-.895-2-2s.895-2 2-2 2 .895 2 2-.895 2-2 2zm0-13.304L.622 8.807l1.06 1.696L3 9.679V19.5C3 20.881 4.119 22 5.5 22h13c1.381 0 2.5-1.119 2.5-2.5V9.679l1.318.824 1.06-1.696L12 1.696zM19 19.5c0 .276-.224.5-.5.5h-13c-.276 0-.5-.224-.5-.5V8.429l7-4.375 7 4.375V19.5z"></path></svg>
+                        <span>Home</span>
+                    </a>
+                    <a href="#" id="profileLink" class="nav-item">
+                        <svg viewBox="0 0 24 24"><path d="M5.651 19h12.698c-.337-1.8-1.023-3.21-1.945-4.19C15.318 13.65 13.838 13 12 13s-3.317.65-4.404 1.81c-.922.98-1.608 2.39-1.945 4.19zm.486-5.56C7.627 11.85 9.648 11 12 11s4.373.85 5.863 2.44c1.477 1.58 2.366 3.8 2.632 6.46l.11 1.1H3.395l.11-1.1c.266-2.66 1.155-4.88 2.632-6.46zM12 4c-1.105 0-2 .9-2 2s.895 2 2 2 2-.9 2-2-.895-2-2-2zM8 6c0-2.21 1.791-4 4-4s4 1.79 4 4-1.791 4-4 4-4-1.79-4-4z"></path></svg>
+                        <span>Profile</span>
+                    </a>
+                </nav>
+                <button id="composeTweetBtn" class="btn-primary compose-btn">Tweet</button>
+                <div class="user-info">
+                    <div class="user-info-content">
+                        <div class="user-avatar" id="sidebarAvatar"></div>
+                        <div class="user-details">
+                            <div class="user-name" id="sidebarUsername">Loading...</div>
+                        </div>
+                    </div>
+                    <button id="logoutBtn" class="btn-secondary btn-sm">Logout</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-header">
+                <h2>Home</h2>
+            </div>
+
+            <!-- Tweet Composer -->
+            <div id="tweetComposer" class="tweet-composer" style="display: none;">
+                <div class="composer-header">
+                    <h3>What's happening?</h3>
+                    <button class="close-btn" id="closeComposer">&times;</button>
+                </div>
+                <form id="composerForm">
+                    <textarea
+                        id="tweetBody"
+                        placeholder="What's happening?"
+                        maxlength="280"
+                        rows="4"
+                    ></textarea>
+                    <div class="composer-footer">
+                        <span id="charCount" class="char-count">0 / 280</span>
+                        <button type="submit" class="btn-primary">Tweet</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Feed -->
+            <div id="feed" class="feed">
+                <div class="loading">Loading feed...</div>
+            </div>
+        </main>
+
+        <!-- Right Sidebar -->
+        <aside class="right-sidebar">
+            <!-- Search -->
+            <div class="search-box">
+                <form id="searchForm">
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Search users"
+                    >
+                </form>
+                <div id="searchResults" class="search-results"></div>
+            </div>
+
+            <!-- Suggested Friends -->
+            <div class="suggestions-box">
+                <h3>Who to follow</h3>
+                <div id="suggestions" class="suggestions">
+                    <div class="loading">Loading suggestions...</div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script src="js/home.js"></script>
+</body>
+</html>

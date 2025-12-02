@@ -1,6 +1,6 @@
-package util;
+package com.twitter.simulation.util;
 
-import models.Tweet;
+import com.twitter.simulation.models.Tweet;
 import java.util.HashMap;
 
 //This class is used to store likes or retweets
