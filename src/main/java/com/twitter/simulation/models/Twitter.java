@@ -207,7 +207,7 @@ public class Twitter {
     }
 
     public Tweet[] getFeed(User user){
-        int feedSize = 10;
+        int feedSize = 20;
 
         PriorityQueue<Tweet> pq = new PriorityQueue<>(
             (a, b) -> b.getDate().compareTo(a.getDate())
@@ -217,6 +217,10 @@ public class Twitter {
             for(Tweet twt : followedUser.getTweets()){
                 pq.add(twt);
             }
+        }
+
+        for(Tweet twt : user.getTweets()){
+            pq.add(twt);
         }
 
         ArrayList<Tweet> feed = new ArrayList<>();
